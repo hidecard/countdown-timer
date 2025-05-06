@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 function Countdown() {
-    const [timers, setTimers] = useState([]);
+    // Initialize state with data from localStorage if available
+    const [timers, setTimers] = useState(() => {
+        const savedTimers = localStorage.getItem("timers");
+        return savedTimers ? JSON.parse(savedTimers) : [];
+    });
     const [newTimerTitle, setNewTimerTitle] = useState("");
     const [newTimerCategory, setNewTimerCategory] = useState("");
     const [newTimerDateTime, setNewTimerDateTime] = useState("");
@@ -12,6 +16,12 @@ function Countdown() {
         Reminder: "bg-green-500",
     };
 
+    // Save timers to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem("timers", JSON.stringify(timers));
+    }, [timers]);
+
+    // Handle timer updates and cleanup
     useEffect(() => {
         const intervalIds = {};
 
@@ -81,7 +91,7 @@ function Countdown() {
         const targetDateTime = new Date(newTimerDateTime).getTime();
 
         const newTimer = {
-            id: timers.length + 1,
+            id: timers.length > 0 ? Math.max(...timers.map(t => t.id)) + 1 : 1,
             category: newTimerCategory,
             targetDateTime,
             timeRemaining: calculateTimeRemaining(targetDateTime),
